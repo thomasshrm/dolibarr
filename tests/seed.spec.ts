@@ -1,4 +1,5 @@
 import { test, expect, request as playwrightRequest } from '@playwright/test';
+import { execSync } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -12,6 +13,12 @@ test.describe('Test group', () => {
     const headers = { DOLAPIKEY: ADMIN_API_KEY };
 
     const createdIds: Record<string, number> = {};
+
+    // Clear login throttling from previous failed runs.
+    execSync(
+      'docker exec "dolibarr-mariadb" mariadb -u"dolidbuser" -p"dolidbSecretPassword" "dolidb" -e "DELETE FROM llx_events WHERE type=\'USER_LOGIN_FAILED\';"',
+      { stdio: 'ignore' }
+    );
 
     // Clean up any leftover users from a previous failed run
     for (const login of ['test_email_user', 'disabled_user']) {

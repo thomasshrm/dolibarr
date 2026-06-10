@@ -11,8 +11,8 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: 'html',
   use: {
-    trace: 'on',
-    video: 'on',
+    trace: 'on-first-retry',
+    video: 'on-first-retry',
   },
 
   projects: [
