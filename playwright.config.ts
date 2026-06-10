@@ -33,6 +33,7 @@ export default defineConfig({
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
       dependencies: ['setup'],
+      testIgnore: [/seed\.spec\.ts/, /teardown\.spec\.ts/],
     },
 
     // Firefox tests depend on setup
@@ -40,6 +41,7 @@ export default defineConfig({
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
       dependencies: ['setup'],
+      testIgnore: [/seed\.spec\.ts/, /teardown\.spec\.ts/],
     },
   ],
 });

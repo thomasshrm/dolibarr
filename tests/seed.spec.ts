@@ -3,24 +3,29 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 const BASE_URL = 'http://localhost';
-const ADMIN_LOGIN = 'admin';
-const ADMIN_PASSWORD = 'admin';
+const ADMIN_API_KEY = process.env.DOLI_ADMIN_API_KEY ?? 'demokey';
 const STATE_FILE = path.join(__dirname, '.test-state.json');
 
 test.describe('Test group', () => {
   test('seed', async () => {
     const apiContext = await playwrightRequest.newContext();
-
-    // 1. Get API token via login
-    const loginRes = await apiContext.post(`${BASE_URL}/api/index.php/login`, {
-      data: { login: ADMIN_LOGIN, password: ADMIN_PASSWORD },
-    });
-    expect(loginRes.ok(), 'API login should succeed').toBeTruthy();
-    const loginData = await loginRes.json();
-    const apiToken: string = loginData.success.token;
-    const headers = { DOLAPIKEY: apiToken };
+    const headers = { DOLAPIKEY: ADMIN_API_KEY };
 
     const createdIds: Record<string, number> = {};
+
+    // Clean up any leftover users from a previous failed run
+    for (const login of ['test_email_user', 'disabled_user']) {
+      const searchRes = await apiContext.get(`${BASE_URL}/api/index.php/users`, {
+        headers,
+        params: { sqlfilters: `(t.login:=:'${login}')` },
+      });
+      if (searchRes.ok()) {
+        const existing = await searchRes.json();
+        if (Array.isArray(existing) && existing.length > 0) {
+          await apiContext.delete(`${BASE_URL}/api/index.php/users/${existing[0].id}`, { headers });
+        }
+      }
+    }
 
     // 2. Create test user with email (for login-with-email test)
     const emailUserRes = await apiContext.post(`${BASE_URL}/api/index.php/users`, {
